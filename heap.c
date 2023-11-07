@@ -64,6 +64,20 @@ void printArray() {
   }
 }
 
+void printArray() {
+  printf("memory ............................\n");
+  // TODO(student): add comment to each of the following line of code
+  for (int i = 0; i < 0x8000; i += 4) { // iterates through the MCB (each MCB entry is 16 bits)
+    if (a2m(i) >= 0x20006800) {
+      printf("%x = %x(%d)\n", a2m(i), *(short *)&array[i], *(short *)&array[i]);
+    }
+    if (a2m(i + 2) >= 0x20006800) {
+      printf("%x = %x(%d)\n", a2m(i + 2), *(short *)&array[i + 2],
+            *(short *)&array[i + 2]);
+    }
+  }
+}
+
 /*
  * Print out the memory managed by mcb, showing used segments
  * and the value of the mcb's
