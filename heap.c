@@ -51,20 +51,6 @@ int a2m(int array_index) {
  * to MCB: 0x2006800 - 0x20006C00.
  */
 void printArray() {
-  printf("memory ............................\n"); 
-  // DOUBLE CHECK
-  for (int i = 0; i < 0x8000; i += 2) { // iterates through the MCB (one entry is two bytes)
-    if (a2m(i) >= 0x20006800) { // if the current memory address is inside the MCB
-      printf("%x = %x(%d)\n", a2m(i), *(short *)&array[i], *(short *)&array[i]); // prints address, value, and the same value as a decimal of current memory address
-    }
-    if (a2m(i + 1) >= 0x20006800) { // if the next memory address is inside the MCB
-      printf("%x = %x(%d)\n", a2m(i + 1), *(short *)&array[i + 1],
-             *(short *)&array[i + 1]); // prints address, value, and the same value as a decimal of next memory address
-    }
-  }
-}
-
-void printArray() {
   printf("memory ............................\n");
   // TODO(student): add comment to each of the following line of code
   for (int i = 0; i < 0x8000; i += 4) { // iterates through the MCB (each MCB entry is 16 bits)
