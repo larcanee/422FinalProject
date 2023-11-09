@@ -8,8 +8,13 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": true,
+<<<<<<< HEAD
       "cwd": "c:/Users/esgpe/OneDrive/Desktop/College/Autumn 2023/CSS 422/Final Project/Part 3",
       "program": "c:/Users/esgpe/OneDrive/Desktop/College/Autumn 2023/CSS 422/Final Project/Part 3/build/Debug/outDebug",
+=======
+      "cwd": "c:/Users/esgpe/OneDrive/Desktop/College/Autumn 2023/CSS 422/Final Project/Part 2",
+      "program": "c:/Users/esgpe/OneDrive/Desktop/College/Autumn 2023/CSS 422/Final Project/Part 2/build/Debug/outDebug",
+>>>>>>> 1fc6dfc5732d8b41066af316c94da76abbf5a552
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [
