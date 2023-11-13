@@ -27,7 +27,6 @@ end_b_loop
 
 
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; char* _strncpy( char* dest, char* src, int size )
 ; Parameters
@@ -53,6 +52,37 @@ s_loop
 end_s_loop
 		POP {R1-R12, LR}
 		BX LR
-				
+		
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-		END			
+;void* _malloc( int size )
+; Parameters
+;	size	- #bytes to allocate
+; Return value
+;   void*	a pointer to the allocated space
+		EXPORT	_malloc
+_malloc
+		; r0 = size
+		PUSH {r1-r12,lr}		
+		; you need to add two lines of code here for part 2 implmentation
+		MOV	r7, #0x1
+		SVC #0x0
+		POP {r1-r12,lr}	
+		BX		lr
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; void _free( void* addr )
+; Parameters
+;	size	- the address of a space to deallocate
+; Return value
+;   none
+		EXPORT	_free
+_free
+		; r0 = addr
+		PUSH {r1-r12,lr}		
+		; you need to add two lines of code here for part 2 implmentation
+		MOV	r7, #0x2
+		SVC #0x0
+		POP {r1-r12,lr}	
+		BX		lr
+		
+		END
