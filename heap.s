@@ -29,6 +29,27 @@ INVALID		EQU		-1				; an invalid id
 _kinit
 		; you must correctly set the value of each MCB block
 		; complete your code
+		PUSH {lr}
+		MOVS r0, #0
+		LDR r1, =HEAP_TOP
+		LDR r2, =HEAP_BOT
+init_heap
+		CMP r1, r2
+		BGE heap_loop_end
+		STR r0, [r1], #4
+		B init_heap
+heap_loop_end
+		LDR r1, =MCB_TOP
+		LDR r2, =MCB_BOT
+		LDR r3, =MAX_SIZE
+		STR r3, [r1], #4
+mcb_loop
+		CMP r1, r2
+		BGE end_mcb_loop
+		STR r0, [r1], #4
+		B mcb_loop
+end_mcb_loop
+		POP {lr}
 		BX		lr
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
