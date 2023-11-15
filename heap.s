@@ -38,6 +38,7 @@ _kinit
 		LDR		R1, =MCB_TOTAL		; load total MCB entries
 		LSL		R1, R1, #1			; multiply by two to get MCB size
 		SUBS	R1, R1, #4			; account for first MCB entry
+		; maybe push lr???
 		BL		_bzero				; zero-initialize MCB space
 		
 		POP 	{R0-R12, LR}		; resume register values
@@ -45,11 +46,39 @@ _kinit
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Kernel Memory Allocation
-; void* _k_alloc( int size )
+; void* _kalloc( int size )
 		EXPORT	_kalloc
 _kalloc
 		; complete your code
 		; return value should be saved into r0
+		; R0 = size
+		LDR		R1, =MCB_TOP
+		LDR		R2, =MCB_BOT
+		PUSH	{LR}
+		BL		_ralloc
+		POP		{LR}
+		BX		LR
+		
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Kernel Memory Allocation
+; void* _ralloc( int size, int left_mcb_addr, int right_mcb_address )
+		EXPORT	_ralloc
+_ralloc
+		; complete your code
+		; return value should be saved into r0
+		; R0 = size
+		; R1 = left_mcb_addr
+		; R2 = right_mcb_addr
+		SUBS	R3, R2, R1
+		ADDS	R3, R3, #0x00000002			; entire_mcb_addr_space
+		LSR		R4, R3, #1					; half_mcb_addr_space
+		ADDS	R5, R1, R4					; midpoint_mcb_addr
+		MOVS	R6, #0						; heap_addr
+		LSL		R7, R3, #4					; act_entire_heap_size
+		LSL		R8, R4, #4					; act_half_heap_size
+		
+		
+		
 		BX		lr
 		
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
