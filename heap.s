@@ -29,28 +29,19 @@ INVALID		EQU		-1				; an invalid id
 _kinit
 		; you must correctly set the value of each MCB block
 		; complete your code
-		PUSH {lr}
-		MOVS r0, #0
-		LDR r1, =HEAP_TOP
-		LDR r2, =HEAP_BOT
-init_heap
-		CMP r1, r2
-		BGE heap_loop_end
-		STR r0, [r1], #4
-		B init_heap
-heap_loop_end
-		LDR r1, =MCB_TOP
-		LDR r2, =MCB_BOT
-		LDR r3, =MAX_SIZE
-		STR r3, [r1], #4
-mcb_loop
-		CMP r1, r2
-		BGE end_mcb_loop
-		STR r0, [r1], #4
-		B mcb_loop
-end_mcb_loop
-		POP {lr}
-		BX		lr
+		IMPORT _bzero
+		PUSH 	{R0-R12, LR}		; save registers
+		LDR 	R0, =MCB_TOP		; MCB space to zero-initialize
+		LDR		R1, =MAX_SIZE		; load max size
+		STR		R1, [R0], #4		; store max size in first MCB entry
+		
+		LDR		R1, =MCB_TOTAL		; load total MCB entries
+		LSL		R1, R1, #1			; multiply by two to get MCB size
+		SUBS	R1, R1, #4			; account for first MCB entry
+		BL		_bzero				; zero-initialize MCB space
+		
+		POP 	{R0-R12, LR}		; resume register values
+		BX		LR					; resume lr
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Kernel Memory Allocation
