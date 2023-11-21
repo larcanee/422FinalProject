@@ -56,7 +56,7 @@ _kalloc
 		LDR		R2, =MCB_BOT
 		PUSH	{LR}
 		BL		_ralloc
-		LDR		R0, [R6]			; set r0 to heap address space
+		MOV		R0, R6			; set r0 to heap address space
 		POP		{LR}
 		BX		LR
 		
@@ -70,7 +70,7 @@ _ralloc
 		; R0 = size
 		; R1 = left_mcb_addr
 		; R2 = right_mcb_addr
-		PUSH	{LR}
+		PUSH	{R0-R5, R7-R8, LR}
 		SUBS	R3, R2, R1
 		ADDS	R3, R3, #0x00000002			; entire_mcb_addr_space
 		LSRS	R4, R3, #1					; half_mcb_addr_space
@@ -88,8 +88,8 @@ fits_half									; if requested size can fit in half of current mcb size
 		LDR		R9, =MCB_ENT_SZ
 		SUBS	R2, R5, R9					; calculate right address (midpoint - mcb entry size)
 		BL		_ralloc						; call ralloc with adjusted register values
+		POP		{R0-R5, R7-R8, LR}	
 		
-		POP		{R0-R5, R7-R8, LR}			
 		CMP		R6, #0						; compares heap address to 0
 		BEQ		alloc_failed				; if 0, allocation has failed
 		
@@ -102,17 +102,19 @@ fits_half									; if requested size can fit in half of current mcb size
 
 alloc_failed								; if heap address is 0
 		PUSH	{R0-R5, R7-R8, LR}
-		MOV		R1, R5					; set midpoint to left address
+		;PUSH {lr}
+		MOV		R1, R5						; set midpoint to left address
 		BL		_ralloc						; try to allocate again
 		POP 	{R0-R5, R7-R8, LR}
+		;POP {lr}
 		B		end_ralloc
 		
 no_fit_half									; if requested size cannot fit in half of current mcb space
 		LDRH	R9, [R1]
-		TST		R9, #0x01					; compares midpoint's LSB to 0
-		BNE 	occupied					; if midpoint's LSB is 1
+		TST		R9, #0x01					; compares left address's LSB to 0
+		BNE 	occupied					; if leftt address's LSB is 1
 		
-		CMP		R1, R7						; compares left addr and entire heap space
+		CMP		R9, R7						; compares left addr and entire heap space
 		BLT		no_fit						; mcb's size stored in left address has less memory than requested
 		
 		ORR 	R7, R7, #1					; set entire heap size to in use			
@@ -136,7 +138,7 @@ no_fit
 		B		end_ralloc
 	
 end_ralloc	
-		POP 	{LR}
+		POP		{R0-R5, R7-R8, LR}
 		BX		LR
 		
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -146,6 +148,48 @@ end_ralloc
 _kfree
 		; complete your code
 		; return value should be saved into r0
+		; R0 = memory address to deallocate
+		PUSH	{LR}
+		LDR		R1, =HEAP_TOP
+		CMP		R0, R1
+		BLT		_kfree_exit
+		
+		LDR		R2, =HEAP_BOT
+		CMP		R0, R2
+		BGT		_kfree_exit
+		
+		SUBS	R0, R0, R1
+		LSRS	R0, R0, #4
+		LDR		R2, =MCB_TOP
+		ADDS	R0, R0, R2
+		
+		BL		_rfree
+		
+		CMP		R0, #0
+		BEQ		_kfree_exit
+		
+		POP		{LR}
+		BX 		LR
+		
+_kfree_exit
+		POP 	{R0, LR}
+		BX 		LR
+		
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Kernel Memory De-allocation
+; void *_rfree( int mcb_addr )
+		EXPORT	_rfree
+_rfree
+		; complete your code
+		; R0 = mcb_addr
+		LDR		R1, [R0]		; contents of MCB entry at address
+		LDR		R2, =MCB_TOP
+		SUBS	R2, R0, R2		; calculate the index of MCB entry
+		LSRS	R3, R1, #4		; calculate mcb displacement
+		LSLS	R4, R1, #4
+		MOVS	R4, R1			; clear LSB of contents
+		
+		MOVS	R1, R0			; mcb addr's bit is cleared
 		BX		lr
 		
 		END

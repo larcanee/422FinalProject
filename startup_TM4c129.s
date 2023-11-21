@@ -214,6 +214,7 @@ Reset_Handler   PROC
 				IMPORT  _systemcall_table_init ; added for CSS422 project
 				IMPORT  _kinit ; added for CSS422 project
 				; set up MSP, do not changethe following three lines
+
 				LDR     R0, =__initial_sp ; thread mode uses MSP
 				MSR     MSP, R0 ; added for CSS422 project
 				ISB
@@ -266,10 +267,9 @@ SVC_Handler     PROC
                 EXPORT  SVC_Handler               [WEAK]
 				IMPORT _systemcall_table_jump
 				; add three to four lines of code here to call _systemcall_table_jump
-				IMPORT  _systemcall_table_jump
 				PUSH {lr}
-                LDR R0, =_systemcall_table_jump
-                BX R0
+                LDR R11, =_systemcall_table_jump
+                BLX R11
 				POP {lr}
 				; do not update the following two lines
                 MRS	R1, PSP						; added for CSS422 project

@@ -12,68 +12,68 @@ SYS_FREE		EQU		0x2		; address 20007B08
 ; System Call Table Initialization
 		EXPORT	_systemcall_table_init 
 _systemcall_table_init
-		LDR		r0, = SYSTEMCALLTBL
+		LDR		R0, = SYSTEMCALLTBL
 		
 		; Initialize SYSTEMCALLTBL[0] = _sys_exit
-		LDR		r1, = _sys_exit
-		STR		r1, [r0]
+		LDR		R1, = _sys_exit
+		STR		R1, [R0]
 
 		; Initialize_SYSTEMCALLTBL[1] = _sys_malloc
 		; add your code here
 		; your code may be of 2 to 6 lines
-		LDR 	r1, =_sys_malloc
-		STR 	r1, [r0, #4]
+		LDR 	R1, =_sys_malloc
+		STR 	R1, [R0, #4]
 	
 		; Initialize_SYSTEMCALLTBL[2] = _sys_free
 		; add your code here
 		; your code may be of 2 to 6 lines
-		LDR 	r1, =_sys_free
-		STR 	r1, [r0, #8]
+		LDR 	R1, =_sys_free
+		STR 	R1, [R0, #8]
 		
-		BX		lr
+		BX		LR
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; System Call Table Jump Routine
 ; this is the function that will be callsed by SVC
         EXPORT    _systemcall_table_jump
 _systemcall_table_jump
-        LDR        r11, = SYSTEMCALLTBL    ; load the starting address of SYSTEMCALLTBL
-        MOV        r10, r7            ; copy the system call number into r10
-        LSL        r10, #0x2        ; system call number * 4
+        LDR        R11, = SYSTEMCALLTBL    ; load the starting address of SYSTEMCALLTBL
+        MOV        R10, R7            ; copy the system call number into r10
+        LSL        R10, #0x2        ; system call number * 4
         ; complete the rest of the code
         ; your code may be of 4 to 8 lines
-        LDR        r1, [r11,r10]
-        PUSH       {r0-r12, lr}
-        BLX        r1
-        POP        {r0-r12, lr}
+        LDR        R1, [R11, R10]	; load address of system call
+        PUSH       {R1-R12, LR}		; save registers and lr
+        BLX        R1				; jump to instruction based on address
+        POP        {R1-R12, LR}		; resume lr and regs
 
-        BX        lr                ; return to SVC_Handler
+        BX	       LR                ; return to SVC_Handler
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; System Call 
 ; provided for you to use
 
 _sys_exit
-		PUSH 	{lr}		; save lr
-		BLX		r11	
-		POP 	{lr}		; resume lr
-		BX		lr
+		PUSH 	{LR}		; save lr
+		BLX		R11	
+		POP 	{LR}		; resume lr
+		BX		LR
 		
 _sys_malloc
 		IMPORT	_kalloc
-		LDR		r11, = _kalloc	
-		PUSH 	{lr}		; save lr
-		BLX		r11			; call the _kalloc function 
-		POP 	{lr}		; resume lr
-		BX		lr
+		LDR		R11, = _kalloc	
+		PUSH 	{LR}		; save lr
+		BLX		R11			; call the _kalloc function 
+		POP 	{LR}		; resume lr
+		BX		LR
 		
 _sys_free
 		IMPORT	_kfree
-		LDR		r11, = _kfree	
-		PUSH 	{lr}		; save lr
-		BLX		r11			; call the _kfree function 
-		POP 	{lr}		; resume lr
-		BX		lr
+		LDR		R11, = _kfree	
+		PUSH 	{LR}		; save lr
+		BLX		R11			; call the _kfree function 
+		POP 	{LR}		; resume lr
+		BX		LR
 		
 		END
 
