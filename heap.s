@@ -182,14 +182,95 @@ _kfree_exit
 _rfree
 		; complete your code
 		; R0 = mcb_addr
-		LDR		R1, [R0]		; contents of MCB entry at address
+		PUSH	{R1-R5,LR}
+		LDR		R1, [R0]		; mcb_contents
 		LDR		R2, =MCB_TOP
-		SUBS	R2, R0, R2		; calculate the index of MCB entry
-		LSRS	R3, R1, #4		; calculate mcb displacement
-		LSLS	R4, R1, #4
-		MOVS	R4, R1			; clear LSB of contents
+		SUBS	R2, R0, R2		; mcb_index
+		LSRS	R3, R1, #4		; mcb_disp
+		LSLS	R1, R3, #4		; clear MCB addr's LSB
+		STR		R1, [R0]		; store in mcb_addr
+		MOVS	R4, R1			; my_size
 		
-		MOVS	R1, R0			; mcb addr's bit is cleared
-		BX		lr
+		SDIV	R5, R2, R3		; mcb_index / mcb_disp
+
+		MOV		R6, #2		
+		SDIV	R7, R5, R6
+		MUL		R7, R7, R6
+		SUBS	R7, R5, R7		; (mcb_index / mcb_disp) % 2
+		
+		CMP		R7, #0			; check if right or left child
+		BEQ		left_child
+		BNE		right_child
+		
+left_child
+		ADDS	R5, R0, R3		; mcb_buddy
+		LDR		R6, =MCB_BOT
+		
+		CMP		R5, R6
+		BGE		beyond_bot
+		
+		LDR		R6, [R5]
+		TST		R6, #0x0001
+		BEQ		buddy_available_left
+		B		end_rfree
+		
+beyond_bot
+		MOV		R0, #0
+		B		end_rfree
+
+buddy_available_left
+		LDR		R6, [R5]
+		CMP		R6, R4
+		BEQ		merge_buddy_left
+		B		end_rfree
+		
+merge_buddy_left
+		MOV		R6, #2
+		MUL		R4, R4, R6		; update my_size
+		MOV		R6, #0
+		STR		R6, [R5]		; store 0 in buddy
+		STR		R4, [R0]		; store updated my_size in mcb_addr
+		PUSH	{R1-R5, LR}
+		BL		_rfree
+		POP		{R1-R5, LR}
+		B		end_rfree
+	
+right_child
+		LDR		R6, =MCB_TOP
+		SUBS	R5, R0, R3
+		
+		CMP		R5, R6
+		BLT		beyond_top
+		
+		LDR		R7, [R5]
+		TST		R7, #0x01
+		BEQ		buddy_available_right
+		B		end_rfree
+		
+beyond_top
+		MOV		R0, #0
+		B		end_rfree
+		
+buddy_available_right
+		LDR		R6, [R5]
+		CMP		R6, R4
+		BEQ		merge_buddy_right
+		B		end_rfree
+		
+merge_buddy_right
+		MOV		R6, #2
+		MUL		R4, R4, R6		; update my_size
+		MOV		R6, #0
+		STR		R6, [R0]		; store 0 in buddy
+		STR		R4, [R5]		; store updated my_size	 in mcb_addr
+		PUSH	{R1-R5, LR}
+		SUBS	R0, R0, R3		; mcb_addr -= mcb_disp
+		BL		_rfree
+		POP		{R1-R5, LR}
+		B		end_rfree
+		
+end_rfree
+		POP		{R1-R5,LR}
+		BX		LR
 		
 		END
